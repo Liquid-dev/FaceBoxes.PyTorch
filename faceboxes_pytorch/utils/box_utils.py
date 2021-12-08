@@ -310,7 +310,6 @@ def get_faceboxes_max_batch_size(width=1080, height=1920, ch=3, print_status_flg
     gpu_batch_sizes = [int(int(info['memory.free']) / image_mega_byte) for info in gpu_info]
 
     if print_status_flg:
-        print(f'cpu_batch_size: {cpu_batch_size}')
         print(f'gpu_batch_sizes: {gpu_batch_sizes}')
 
     return  min(gpu_batch_sizes)
