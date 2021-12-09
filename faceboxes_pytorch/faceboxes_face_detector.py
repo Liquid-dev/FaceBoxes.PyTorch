@@ -59,14 +59,16 @@ class FaceBoxesFaceDetector(object):
     def get_faceboxes(self, image, threshold=0.2):
         resize = 1
 
-        img = np.float32(image)
-        im_height, im_width, _ = img.shape
-        scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
-        img -= (104, 117, 123)
-        img = img.transpose(2, 0, 1)
-        img = torch.from_numpy(img).unsqueeze(0)
+        im_height, im_width, _ = image.shape
+        scale = torch.Tensor([im_width, im_height, im_width, im_height])
+
+        img = torch.from_numpy(image).unsqueeze(0)
         img = img.to(self.device)
+        img = img.to(torch.float32)
         scale = scale.to(self.device)
+
+        img = torch.sub(img, torch.tensor((104,117,123)).to(self.device))
+        img = img.permute(0,3,1,2)
 
         loc, conf = self.net(img)  # forward pass
         priorbox = PriorBox(cfg, image_size=(im_height, im_width))
