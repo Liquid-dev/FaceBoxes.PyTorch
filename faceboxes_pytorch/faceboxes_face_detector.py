@@ -9,7 +9,6 @@ from typing import List, Tuple
 
 class FaceBoxesFaceDetector(object):
     def __init__(self, use_gpu=False):
-        torch.set_grad_enabled(False)
         # net and model
         self.net = FaceBoxes(phase='test', size=None, num_classes=2)    # initialize detector
         weight_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'weights/FaceBoxes.pth'))
@@ -56,6 +55,7 @@ class FaceBoxesFaceDetector(object):
         model.load_state_dict(pretrained_dict, strict=False)
         return model
 
+    @torch.no_grad()
     def get_faceboxes(self, image, threshold=0.2):
         resize = 1
 
@@ -92,7 +92,7 @@ class FaceBoxesFaceDetector(object):
 
         return scores, boxes
 
-
+    @torch.no_grad()
     def get_batch_faceboxes(self, image_list:List[np.ndarray], *, batch_size=-1, threshold=0.2)->List[Tuple[List[float],List[np.ndarray]]]:
         """
         image_list: List[np.ndarray] 同じサイズの画像のリスト
