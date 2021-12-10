@@ -116,6 +116,7 @@ class FaceBoxesFaceDetector(object):
             batch_size = get_faceboxes_max_batch_size(width=im_width, height=im_height, ch=im_ch)
             batch_size = int(batch_size * 0.7)
 
+        batch_size = min(len(image_list), batch_size)
         resize = 1
 
         results = []
@@ -176,8 +177,6 @@ class FaceBoxesFaceDetector(object):
             results += result
 
             # 以降gpu上の画像は使わないので解放する
-            # 速度に影響なさそうなのでループごとに実行
             del imgs
-            torch.cuda.empty_cache()
 
         return results
