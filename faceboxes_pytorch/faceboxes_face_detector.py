@@ -186,6 +186,16 @@ class FaceBoxesFaceDetector(object):
     @torch.no_grad()
     def get_batch_faceboxes_with_resize(self, image_list:List[np.ndarray], *, resize_target_width=360, resize_target_height=640,
                                     batch_size=-1, threshold=0.2)->List[Tuple[List[float],List[np.ndarray]]]:
+        """
+        image_list: List[np.ndarray] 画像のリスト 内部でresizeするため、同じ大きさである必要はない
+        resize_target_width: 内部でresizeするときのwidth
+        resize_target_height: 内部でresizeするときのheight
+          上二つのデフォルト値はアスペクト比9:16にしている
+        batch_size: image_listの中から何個処理するかを指定する. デフォルトの場合はgpuの空きメモリから算出する.値は2以上にすること
+        threshold: faceboxesのconfの閾値
+
+        return: List[Tuple[confのリスト],[BoundingBoxのリスト]]
+        """
 
         resize_target_resize_size = (resize_target_width, resize_target_height)
         shapes = [i.shape for i in image_list]
