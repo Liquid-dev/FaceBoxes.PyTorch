@@ -7,6 +7,8 @@ from .models.faceboxes import FaceBoxes
 from .utils.box_utils import decode, batch_decode, get_faceboxes_max_batch_size
 from typing import List, Tuple
 
+import cv2
+
 class FaceBoxesFaceDetector(object):
     def __init__(self, use_gpu=False):
         # net and model
@@ -180,3 +182,24 @@ class FaceBoxesFaceDetector(object):
             del imgs
 
         return results
+
+    @torch.no_grad()
+    def get_batch_faceboxes_with_resize(self, image_list:List[np.ndarray], *, resize_target_width=360, resize_target_height=640,
+                                    batch_size=-1, threshold=0.2)->List[Tuple[List[float],List[np.ndarray]]]:
+
+        resize_target_resize_size = (resize_target_width, resize_target_height)
+        shapes = [i.shape for i in image_list]
+        resized_images = [cv2.resize(i, resize_target_resize_size) for i in image_list]
+
+        results = self.get_batch_faceboxes(resized_images, batch_size=batch_size, threshold=threshold)
+
+        new_results = []
+        for shape, (confs, boxes) in zip(shapes, results):
+            h, w = shape[:2]
+            rh = h / resize_target_height
+            rw = w / resize_target_width
+            ratios = [rw, rh, rw, rh]
+            new_result = (confs, [b * ratios for b in boxes])
+            new_results.append(new_result)
+
+        return new_results
