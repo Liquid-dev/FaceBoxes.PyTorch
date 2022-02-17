@@ -112,11 +112,14 @@ class FaceBoxesFaceDetector(object):
 
         im_height, im_width, im_ch = image_list[0].shape
 
-        if batch_size == -1:
+        if (batch_size == -1) and (torch.cuda.is_available()):
             # batch_sizeが未指定の場合はgpuの空きメモリと画像1枚あたりの容量から許容枚数を算出し、安全マージンの7掛けした値をbatch_sizeとして使用する
             torch.cuda.empty_cache()
             batch_size = get_faceboxes_max_batch_size(width=im_width, height=im_height, ch=im_ch)
             batch_size = int(batch_size * 0.7)
+
+        if (batch_size == -1) and (not torch.cuda.is_available()):
+            batch_size = len(image_list)
 
         batch_size = min(len(image_list), batch_size)
         resize = 1
