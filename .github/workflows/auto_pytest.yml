@@ -1,0 +1,51 @@
+name: pull request pytest
+on: pull_request
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        poetry-version: ["1.8.2"]
+
+    steps:
+
+      # checkout repository
+      - name: checkout
+        uses: actions/checkout@v2
+
+      # install python
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+
+      # poetry install
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ env.poetry-version}}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      # vertural env cache
+      - name: Cache Poetry cache
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: poetry-cache-${{ runner.os }}-${{ env.python-version }}-${{ env.poetry-version}}-workflow-${{ hashFiles('**/.github/workflows/auto_pytest.yml') }}-lock-${{ hashFiles('**/poetry.lock') }}-private-${{ hashFiles('**/private_requirements.txt') }}
+
+      # cacheがヒットする場合はインストールをスキップする
+      - name: install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        env:
+          GIT_TOKEN: ${{ secrets.MACHINE_USER_TOKEN }}
+        run: |
+          poetry install --no-interaction
+      # pytestを実行する -> カバレッジもあわせてみる
+      # poetry run python -m pytest -v --cov=api --cov-report=term-missing
+      - name: Test with pytest
+        run: |
+          poetry run python -m pytest -v
