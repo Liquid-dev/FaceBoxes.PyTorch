@@ -5,9 +5,9 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10, <4"
+python = "^3.10"
 opencv-python = "^4.2"
-torch = "^2.0, <3"
+torch = "^2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
